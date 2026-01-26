@@ -12,6 +12,10 @@ class indexController extends Controller
     //
     public function index()
     {
+        if (!auth()->user()->isAdmin() || !auth()->user()->hasRole("administrador-de-campana")) {
+            return view('pages.mapa.vistaLogo');
+        }
+        
         $totalRegistrados = Persona::count();
         $totalHombres = Persona::where('genero_id', '1')->count();
         $totalMujeres = Persona::where('genero_id', '2')->count();
