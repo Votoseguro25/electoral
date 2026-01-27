@@ -12,7 +12,7 @@ class indexController extends Controller
     //
     public function index()
     {
-        if (!auth()->user()->isAdmin() || !auth()->user()->hasRole("administrador-de-campana")) {
+        if (!(auth()->user()->isAdmin() || auth()->user()->hasRole("administrador-de-campana"))) {
             return view('pages.mapa.vistaLogo');
         }
         
