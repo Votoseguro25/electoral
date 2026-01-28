@@ -8,6 +8,7 @@ use App\Models\Votante;
 use App\Models\Compromiso;
 use App\Models\Genero;
 use App\Models\Puesto;
+use Auth;
 use Illuminate\Http\Request;
 use App\Models\Persona;
 
@@ -32,7 +33,11 @@ class votantesController extends Controller
             );
         }
 
-        $votantes = Votante::orderBy('id', 'desc')->paginate(10);
+        $votantes = Votante::whereHas('persona', function ($query) {
+            if (!Auth::user()->isAdmin()) {
+                $query->where('creador_id', Auth::id())->orWhere('creador_id', null);
+            }
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('pages.votantes.listado', [
             "departamentos" => $departamentos,
@@ -55,7 +60,8 @@ class votantesController extends Controller
                 "municipio_id" => $req->input('municipio'),
                 "mesa_id" => $req->input('mesa'),
                 "genero_id" => $req->input('genero'),
-                "reporte_voto" => '0'
+                "reporte_voto" => '0',
+                "creador_id" => Auth::id(),
             ]);
 
             $personas->votante()->create([
@@ -154,7 +160,12 @@ class votantesController extends Controller
     {
         $query = Votante::leftJoin('personas', 'votantes.persona_id', '=', 'personas.id')
             ->leftJoin('municipios', 'personas.municipio_id', '=', 'municipios.id')
-            ->select('votantes.*', 'personas.*', 'votantes.id as id');
+            ->select('votantes.*', 'personas.*', 'votantes.id as id')
+            ->whereHas('persona', function ($query) {
+                if (!Auth::user()->isAdmin()) {
+                    $query->where('creador_id', Auth::id())->orWhere('creador_id', null);
+                }
+            });
 
         // Filtro por texto (cédula o nombre)
         if ($req->query('consulta')) {

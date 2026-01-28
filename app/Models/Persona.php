@@ -19,6 +19,7 @@ class Persona extends Model
         'genero_id',
         'reporte_voto',
         'municipio_id',
+        'creador_id'
     ];
 
     public function lider()
