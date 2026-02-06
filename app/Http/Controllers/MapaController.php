@@ -181,4 +181,76 @@ class MapaController extends Controller
         return response()->json($rows);
     }
 
+    /**
+     * Mostrar vista del mapa de votantes registrados
+     */
+    public function mostrarVotantesRegistrados()
+    {
+        return view('pages.mapa.votantes-registrados');
+    }
+
+    /**
+     * Obtener cantidad de votantes registrados por departamento
+     */
+    public function votantesPorDepartamento(Request $request)
+    {
+        $departamento = $this->nullIfEmpty($request->query('departamento'));
+
+        $query = DB::table('personas')
+            ->join('votantes', 'personas.id', '=', 'votantes.persona_id')
+            ->join('municipios', 'personas.municipio_id', '=', 'municipios.id')
+            ->join('departamentos', 'municipios.departamento_id', '=', 'departamentos.id')
+            ->select(
+                'departamentos.id as departamento_id',
+                'departamentos.nombre as nombre_departamento',
+                DB::raw('COUNT(DISTINCT personas.id) as total_votantes'),
+                DB::raw('SUM(CASE WHEN personas.genero_id = 1 THEN 1 ELSE 0 END) as total_hombres'),
+                DB::raw('SUM(CASE WHEN personas.genero_id = 2 THEN 1 ELSE 0 END) as total_mujeres')
+            )
+            ->groupBy('departamentos.id', 'departamentos.nombre');
+
+        if ($departamento) {
+            $query->where('departamentos.nombre', $departamento);
+        }
+
+        $rows = $query->get();
+
+        return response()->json($rows);
+    }
+
+    /**
+     * Obtener cantidad de votantes registrados por municipio
+     */
+    public function votantesPorMunicipio(Request $request)
+    {
+        $departamento = $this->nullIfEmpty($request->query('departamento'));
+        $municipio = $this->nullIfEmpty($request->query('municipio'));
+
+        $query = DB::table('personas')
+            ->join('votantes', 'personas.id', '=', 'votantes.persona_id')
+            ->join('municipios', 'personas.municipio_id', '=', 'municipios.id')
+            ->join('departamentos', 'municipios.departamento_id', '=', 'departamentos.id')
+            ->select(
+                'municipios.id as municipio_id',
+                'municipios.nombre as nombre_municipio',
+                'departamentos.nombre as nombre_departamento',
+                DB::raw('COUNT(DISTINCT personas.id) as total_votantes'),
+                DB::raw('SUM(CASE WHEN personas.genero_id = 1 THEN 1 ELSE 0 END) as total_hombres'),
+                DB::raw('SUM(CASE WHEN personas.genero_id = 2 THEN 1 ELSE 0 END) as total_mujeres')
+            )
+            ->groupBy('municipios.id', 'municipios.nombre', 'departamentos.nombre');
+
+        if ($departamento) {
+            $query->where('departamentos.nombre', $departamento);
+        }
+
+        if ($municipio) {
+            $query->where('municipios.nombre', $municipio);
+        }
+
+        $rows = $query->get();
+
+        return response()->json($rows);
+    }
+
 }

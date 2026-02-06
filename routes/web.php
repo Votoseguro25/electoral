@@ -27,6 +27,7 @@ use App\Http\Middleware\validarPartidosEditar;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\votantesController;
 use App\Http\Controllers\MapaController;
+use App\Http\Controllers\MovilizacionController;
 
 Route::get('/', [indexController::class, 'index'])->middleware(Authenticate::class)->name('inicio');
 
@@ -171,22 +172,45 @@ Route::middleware([Authenticate::class])->group(function () {
 
     Route::prefix('mapa')->group(function () {
         Route::get('/resultado', [MapaController::class, 'mostrarResultado']);
+        Route::get('/votantes-registrados', [MapaController::class, 'mostrarVotantesRegistrados'])->name('mapa.votantes.registrados');
+
     });
 
-    Route::prefix('api')->group(function () {
+
+    Route::prefix('api')->group(function(){
         // Resultados agregados
-        Route::get('/resultados/departamentos', [MapaController::class, 'resultadosPorDepartamento']);
-        Route::get('/resultados/municipios', [MapaController::class, 'resultadosPorMunicipio']);
+        Route::get('/resultados/departamentos',          [MapaController::class, 'resultadosPorDepartamento']);
+        Route::get('/resultados/municipios',             [MapaController::class, 'resultadosPorMunicipio']);
 
         // Ganadores
-        Route::get('/resultados/departamentos/ganador', [MapaController::class, 'ganadorPorDepartamento']);
-        Route::get('/resultados/municipios/ganador', [MapaController::class, 'ganadorPorMunicipio']);
+        Route::get('/resultados/departamentos/ganador',  [MapaController::class, 'ganadorPorDepartamento']);
+        Route::get('/resultados/municipios/ganador',     [MapaController::class, 'ganadorPorMunicipio']);
 
         // Resúmenes
-        Route::get('/resultados/departamentos/resumen', [MapaController::class, 'resumenDepartamentos']);
-        Route::get('/resultados/municipios/resumen', [MapaController::class, 'resumenMunicipios']);
+        Route::get('/resultados/departamentos/resumen',  [MapaController::class, 'resumenDepartamentos']);
+        Route::get('/resultados/municipios/resumen',     [MapaController::class, 'resumenMunicipios']);
+
+        // Votantes registrados
+        Route::get('/votantes/departamentos',            [MapaController::class, 'votantesPorDepartamento']);
+        Route::get('/votantes/municipios',               [MapaController::class, 'votantesPorMunicipio']);
 
     });
 
+    // Movilizacion Dia D
+    Route::prefix('movilizacion')->group(function () {
+        Route::get('/', [MovilizacionController::class, 'index'])->name('movilizacion.index');
+        Route::get('/exportar', [MovilizacionController::class, 'exportarPendientes'])->name('movilizacion.exportar');
+
+        // API endpoints
+        Route::prefix('api')->group(function () {
+            Route::get('/estadisticas', [MovilizacionController::class, 'estadisticas'])->name('movilizacion.api.estadisticas');
+            Route::get('/buscar', [MovilizacionController::class, 'buscarPorCedula'])->name('movilizacion.api.buscar');
+            Route::post('/confirmar', [MovilizacionController::class, 'confirmarVoto'])->name('movilizacion.api.confirmar');
+            Route::post('/revertir', [MovilizacionController::class, 'revertirVoto'])->name('movilizacion.api.revertir');
+            Route::get('/pendientes', [MovilizacionController::class, 'pendientes'])->name('movilizacion.api.pendientes');
+            Route::get('/lideres', [MovilizacionController::class, 'estadisticasPorLider'])->name('movilizacion.api.lideres');
+            Route::get('/mesas/{puesto}', [MovilizacionController::class, 'getMesasPorPuesto'])->name('movilizacion.api.mesas');
+        });
+    });
 
 });

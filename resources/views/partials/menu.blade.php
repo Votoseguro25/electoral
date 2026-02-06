@@ -5,6 +5,18 @@
                 <li>
                     <a href="{{route('inicio')}}"><i class="menu-icon fa fa-laptop"></i>Inicio </a>
                 </li>
+                
+                @canAccessRoute('mapa.votantes.registrados')
+                <li>
+                    <a href="{{route('mapa.votantes.registrados')}}"><i class="menu-icon fa fa-map-marked-alt"></i>Mapa Votantes</a>
+                </li>
+                @endcanAccessRoute
+                
+                @canAccessRoute('movilizacion.index')
+                <li>
+                    <a href="{{route('movilizacion.index')}}"><i class="menu-icon fa fa-bullseye"></i>Movilizacion Dia D</a>
+                </li>
+                @endcanAccessRoute
 
                 @php
                     $tieneDatosBasicos = auth()->user()?->canAccessRoute('usuarios.registrar.vista') ||

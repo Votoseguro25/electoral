@@ -8,7 +8,7 @@ class Persona extends Model
 {
     protected $table = 'personas';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'nombre',
@@ -19,7 +19,6 @@ class Persona extends Model
         'genero_id',
         'reporte_voto',
         'municipio_id',
-        'creador_id'
     ];
 
     public function lider()
@@ -45,5 +44,10 @@ class Persona extends Model
     public function mesa()
     {
         return $this->belongsTo(Mesa::class, 'mesa_id', 'id');
+    }
+
+    public function estadoVotante()
+    {
+        return $this->belongsTo(EstadoVotante::class, 'estado_votante_id', 'id');
     }
 }

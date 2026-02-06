@@ -46,6 +46,19 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">
+                        <i class="bi bi-funnel text-primary mr-1"></i>Puesto
+                    </label>
+                    <select id="filtro-puesto" class="form-control">
+                        <option value="">Todos</option>
+                        {{-- Los puestos se cargarán dinámicamente según el municipio --}}
+                    </select>
+                </div>
+            </div>
+
+            {{-- Segunda fila de filtros --}}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
                         <i class="bi bi-search text-primary mr-1"></i>Buscar E14_ID
                     </label>
                     <input type="text" id="filtro-e14id" class="form-control" placeholder="Buscar por E14_ID...">
@@ -56,22 +69,17 @@
                     </label>
                     <input type="text" id="filtro-mesa" class="form-control" placeholder="Buscar por mesa...">
                 </div>
-            </div>
-
-            {{-- Nuevo filtro de Estado de Coincidencia --}}
-            <div class="row mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">
-                        <i class="bi bi-check2-circle text-primary mr-1"></i>Estado de Coincidencia (Votos Urna vs Suma E14)
+                        <i class="bi bi-check2-circle text-primary mr-1"></i>Estado de Coincidencia
                     </label>
                     <select id="filtro-coincidencia" class="form-control">
                         <option value="">Todos los registros</option>
-                        <option value="iguales">✅ E14 correctos(sin diferencia)</option>
-                        <option value="diferentes">❌ Con(con discrepancia)</option>
+                        <option value="iguales">E14 correctos (sin diferencia)</option>
+                        <option value="diferentes">Con discrepancia</option>
                     </select>
                 </div>
-                <div class="col-md-8 d-flex align-items-end">
-                    {{-- ms-2 → ml-2 --}}
+                <div class="col-md-3 d-flex align-items-end">
                     <div class="alert alert-info mb-0 py-2 w-100" id="info-filtro">
                         <i class="bi bi-info-circle mr-2"></i>
                         <span id="info-texto">Mostrando todos los registros</span>
@@ -349,12 +357,103 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar datos al inicio
     cargarE14s();
 
-    // Filtros
-    document.getElementById('filtro-departamento').addEventListener('change', filtrarTabla);
-    document.getElementById('filtro-municipio').addEventListener('change', filtrarTabla);
+// Filtros
+    document.getElementById('filtro-departamento').addEventListener('change', function() {
+        actualizarMunicipios();
+        actualizarPuestos();
+        filtrarTabla();
+    });
+    document.getElementById('filtro-municipio').addEventListener('change', function() {
+        actualizarPuestos();
+        filtrarTabla();
+    });
+    document.getElementById('filtro-puesto').addEventListener('change', filtrarTabla);
     document.getElementById('filtro-e14id').addEventListener('input', filtrarTabla);
     document.getElementById('filtro-mesa').addEventListener('input', filtrarTabla);
     document.getElementById('filtro-coincidencia').addEventListener('change', filtrarTabla);
+
+    // Función para actualizar municipios según el departamento seleccionado
+    function actualizarMunicipios() {
+        const depId = document.getElementById('filtro-departamento').value;
+        const selectMunicipio = document.getElementById('filtro-municipio');
+        
+        // Limpiar opciones actuales
+        selectMunicipio.innerHTML = '<option value="">Todos</option>';
+        
+        if (depId) {
+            // Filtrar municipios que pertenecen al departamento seleccionado
+            const municipiosFiltrados = municipios.filter(m => m.departamento_id == depId);
+            municipiosFiltrados.forEach(mun => {
+                const option = document.createElement('option');
+                option.value = mun.id;
+                option.textContent = mun.nombre;
+                option.dataset.departamento = mun.departamento_id;
+                selectMunicipio.appendChild(option);
+            });
+        } else {
+            // Si no hay departamento seleccionado, mostrar todos los municipios
+            municipios.forEach(mun => {
+                const option = document.createElement('option');
+                option.value = mun.id;
+                option.textContent = mun.nombre;
+                option.dataset.departamento = mun.departamento_id;
+                selectMunicipio.appendChild(option);
+            });
+        }
+        
+        // Resetear puesto cuando cambia el municipio
+        actualizarPuestos();
+    }
+
+    // Función para actualizar puestos según el departamento y municipio seleccionados
+    function actualizarPuestos() {
+        const depId = document.getElementById('filtro-departamento').value;
+        const munId = document.getElementById('filtro-municipio').value;
+        const selectPuesto = document.getElementById('filtro-puesto');
+        
+        // Limpiar opciones actuales
+        selectPuesto.innerHTML = '<option value="">Todos</option>';
+        
+        let puestosFiltrados = [];
+        
+        if (munId) {
+            // Si hay municipio seleccionado, filtrar puestos por municipio
+            puestosFiltrados = puestos.filter(p => p.municipio_id == munId);
+        } else if (depId) {
+            // Si solo hay departamento, obtener municipios del departamento y luego sus puestos
+            const municipiosDelDep = municipios.filter(m => m.departamento_id == depId).map(m => m.id);
+            puestosFiltrados = puestos.filter(p => municipiosDelDep.includes(p.municipio_id));
+        } else {
+            // Si no hay filtros, mostrar todos los puestos
+            puestosFiltrados = puestos;
+        }
+        
+        puestosFiltrados.forEach(puesto => {
+            const option = document.createElement('option');
+            option.value = puesto.id;
+            option.textContent = puesto.nombre;
+            selectPuesto.appendChild(option);
+        });
+    }
+
+    // Precargar departamento del Chocó al inicio
+    function precargarChoco() {
+        const selectDepartamento = document.getElementById('filtro-departamento');
+        // Buscar el Chocó en los departamentos (puede ser "Chocó", "CHOCO" o "CHOCÓ")
+        const choco = departamentos.find(d => 
+            d.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'choco' ||
+            d.nombre.toLowerCase() === 'chocó' ||
+            d.nombre.toLowerCase() === 'choco'
+        );
+        
+        if (choco) {
+            selectDepartamento.value = choco.id;
+            actualizarMunicipios();
+        }
+    }
+
+    // Inicializar: precargar Chocó
+    precargarChoco();
 
     // Función para cargar todos los E14s
     async function cargarE14s() {
@@ -404,10 +503,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Función para filtrar tabla
+// Función para filtrar tabla
     function filtrarTabla() {
         const depId = document.getElementById('filtro-departamento').value;
         const munId = document.getElementById('filtro-municipio').value;
+        const puestoId = document.getElementById('filtro-puesto').value;
         const e14id = document.getElementById('filtro-e14id').value.toLowerCase();
         const mesa = document.getElementById('filtro-mesa').value.toLowerCase();
         const coincidencia = document.getElementById('filtro-coincidencia').value;
@@ -415,6 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e14DataFiltrada = e14Data.filter(item => {
             const matchDep = !depId || item.DEPARTAMENTO == depId;
             const matchMun = !munId || item.MUNICIPIO == munId;
+            const matchPuesto = !puestoId || item.PUESTO == puestoId;
             const matchE14 = !e14id || (item.E14_ID && item.E14_ID.toLowerCase().includes(e14id));
             const matchMesa = !mesa || (item.MESA && item.MESA.toLowerCase().includes(mesa));
             
@@ -429,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 matchCoincidencia = diferencia !== 0;
             }
             
-            return matchDep && matchMun && matchE14 && matchMesa && matchCoincidencia;
+            return matchDep && matchMun && matchPuesto && matchE14 && matchMesa && matchCoincidencia;
         });
 
         paginaActual = 1;

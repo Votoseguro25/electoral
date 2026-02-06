@@ -686,31 +686,37 @@ public function index()
         }
     }
 
-    public function actualizar(Request $request, $id)
-    {
-        try {
-            $datos = [
-                'MESA' => $request->mesa,
-                'DEPARTAMENTO' => $request->departamento_id,
-                'MUNICIPIO' => $request->municipio_id,
-                'PUESTO' => $request->puesto_id,
-                'TOTAL_VOTANTES-E11' => $request->total_votantes_e11,
-                'TOTAL_VOTOS-URNA' => $request->total_votos_urna,
-                'SUMA_VOTOS-E14' => $request->suma_votos_e14,
-                'VOTOS_BLANCO' => $request->votos_blanco,
-                'VOTOS_NULOS' => $request->votos_nulos,
-                'OBSERVACION' => $request->observacion,
-            ];
+public function actualizar(Request $request, $id)
+{
+    try {
+        $affected = DB::update("
+            UPDATE reportare14 SET
+                MESA = ?,
+                `TOTAL_VOTANTES-E11` = ?,
+                `TOTAL_VOTOS-URNA` = ?,
+                `SUMA_VOTOS-E14` = ?,
+                VOTOS_BLANCO = ?,
+                VOTOS_NULOS = ?,
+                OBSERVACION = ?
+            WHERE ID = ?
+        ", [
+            $request->input('MESA'),
+            (int) $request->input('TOTAL_VOTANTES-E11'),
+            (int) $request->input('TOTAL_VOTOS-URNA'),
+            (int) $request->input('SUMA_VOTOS-E14'),
+            (int) $request->input('VOTOS_BLANCO', 0),
+            (int) $request->input('VOTOS_NULOS', 0),
+            $request->input('OBSERVACION'),
+            (int) $id
+        ]);
 
-            DB::table('reportare14')->where('ID', $id)->update($datos);
-
-            return response()->json(['message' => 'Actualizado correctamente']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al actualizar'], 500);
-        }
+        return response()->json(['message' => 'Actualizado correctamente', 'affected' => $affected]);
         
-        dd($request->all());
+    } catch (\Exception $e) {
+        \Log::error('Error en actualizar: ' . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     public function eliminar($id)
     {
