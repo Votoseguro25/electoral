@@ -34,7 +34,7 @@ Route::get('/', [indexController::class, 'index'])->middleware(Authenticate::cla
 Route::get('/AK', [ReporteController::class, 'AK'])->name('AK.index');
 Route::post('/gemini/process', [ReporteController::class, 'process'])->name('gemini.process');
 
-Route::middleware('role:testigo')->group(function () {
+Route::middleware('role:testigo,administrador-de-campana')->group(function () {
     Route::get('/reportar/e14', [ReporteController::class, 'crearReporteE14'])->name('testigos.reportare14');
     Route::post('/reportar/e14/guardar', [ReporteController::class, 'guardarReporteE14'])->name('testigos.reportare14.guardar');
     Route::post('/reportar/e14/ia', [ReporteController::class, 'procesarIA'])->name('testigos.reportare14.ia');
@@ -90,10 +90,10 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/api/camara/mesas', [ReporteController::class, 'getMesasCamara']);
     Route::get('/api/reportecandidatosCamara', [ReporteController::class, 'reporteCandidatosCamaraFiltros']);
         
-    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin')->name('reporte.CandidatosCamaraFiltros');
+    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin,administrador-de-campana')->name('reporte.CandidatosCamaraFiltros');
     
 
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin,administrador-de-campana')->group(function () {
         Route::get('/reporteVotos', [reporteController::class, 'reporteVotos'])->name('reporte.votos');
         Route::get('/votos/candidatos', [ReporteController::class, 'Candidatos'])->name('reporte.candidatos');
         Route::get('/api/reporte-candidatos', [ReporteController::class, 'reporteCandidatos']);
@@ -104,15 +104,15 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/votos/partidos', [ReporteController::class, 'Partidos'])->name('reporte.partidos');
     Route::get('/api/reporte-partidos', [ReporteController::class, 'reportePartidos']);
 
-    Route::get('/votos/partidosCamara', [ReporteController::class, 'PartidosCamara'])->middleware('role:admin')->name('reporte.partidosCamara');
+    Route::get('/votos/partidosCamara', [ReporteController::class, 'PartidosCamara'])->middleware('role:admin,administrador-de-campana')->name('reporte.partidosCamara');
     Route::get('/api/reporte-partidosCamara', [ReporteController::class, 'reportePartidosCamara']);
 
     Route::get('/api/votos', [reporteController::class, 'apiVotos']);
     Route::get('/export-votos', [reporteController::class, 'exportAll'])->name('export.todos');
 
     Route::prefix('votantes')->group(function () {
-        Route::get('/reportarvoto', [votantesController::class, 'reportarVotoVista'])->middleware('role:lider')->name('votantes.reportarvoto.vista');
-        Route::middleware('role:admin')->group(function () {
+        Route::get('/reportarvoto', [votantesController::class, 'reportarVotoVista'])->middleware('role:lider,administrador-de-campana')->name('votantes.reportarvoto.vista');
+        Route::middleware('role:admin,administrador-de-campana')->group(function () {
             Route::post('/reportarvoto/buscar', [reporteController::class, 'buscarVotante'])->name('votantes.reportarvoto.buscar');
             Route::post('/reportarvoto/confirmar', [reporteController::class, 'confirmarVoto'])->name('votantes.reportarvoto.confirmar');
         });
