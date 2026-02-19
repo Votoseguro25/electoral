@@ -132,8 +132,8 @@
 
                 @canAccessRoute('reporte.candidatosCamara')
                 <li>
-                    <a href="{{route('reporte.candidatosCamara')}}"> <i class="fa-solid  fa-list"></i>
-                        Votos candidatos-Camara
+                    <a href="{{route('reporte.candidatosCamara')}}"> <i class="fa-solid  fa-bar-chart"></i>
+                        Resultados
                     </a>
                 </li>
                 @endcanAccessRoute
@@ -143,7 +143,7 @@
                 @canAccessRoute('reporte.CandidatosCamaraFiltros')
                 <li>
                     <a href="{{route('reporte.CandidatosCamaraFiltros')}}"> <i class="fa-solid  fa-list"></i>
-                        Votos candidatos-estadisticas
+                        Votos Por Candidato
                     </a>
                 </li>
                 @endcanAccessRoute
@@ -151,7 +151,7 @@
                 @canAccessRoute('reporte.partidosCamara')
                 <li>
                     <a href="{{route('reporte.partidosCamara')}}"> <i class="fa-solid fa-layer-group"></i>
-                        Votos partidos-Camara
+                        Votos Por Partido
                     </a>
                 </li>
                 @endcanAccessRoute
@@ -160,8 +160,8 @@
 
                 @canAccessRoute('testigos.reportare14')
                 <li>
-                    <a href="{{route('testigos.reportare14Camara')}}"> <i class="fa-solid fa-clipboard-list"></i>
-                        reportar e14Camara
+                    <a href="{{route('testigos.reportare14Camara')}}"> <i class="fa-solid fa-pencil-square-o"></i>
+                        Reportar E14
                     </a>
                 </li>
                 @endcanAccessRoute
