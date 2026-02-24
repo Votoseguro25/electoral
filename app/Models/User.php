@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'mesa_id',
     ];
 
     /**
@@ -68,6 +69,14 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'id');
+    }
+
+    /**
+     * Relación: Un usuario testigo está asignado a una mesa
+     */
+    public function mesa()
+    {
+        return $this->belongsTo(Mesa::class, 'mesa_id', 'id');
     }
 
     /**

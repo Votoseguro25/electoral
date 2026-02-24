@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Departamento;
+use App\Models\Mesa;
+use App\Models\Puesto;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -18,9 +21,12 @@ class usuariosController extends Controller
 
     public function registrarVista()
     {
-        $usuarios = User::orderBy('id', 'desc')->paginate(10);
+        $usuarios = User::with('mesa.puesto.municipio.departamento')
+            ->orderBy('id', 'desc')
+            ->paginate(10);
         $roles = Role::all();
-        return view('pages.acceso.registrar', compact('usuarios', 'roles'));
+        $departamentos = Departamento::orderBy('nombre')->get();
+        return view('pages.acceso.registrar', compact('usuarios', 'roles', 'departamentos'));
     }
 
     public function registrarUsuario(Request $req)
@@ -30,27 +36,49 @@ class usuariosController extends Controller
                 'rounds' => 12
             ]);
 
+            $role = Role::find($req->input('role'));
+            $esTestigo = $role && $role->slug === 'testigo';
+
             User::create([
-                'name' => $req->input('name'),
-                'email' => $req->input('email'),
+                'name'     => $req->input('name'),
+                'email'    => $req->input('email'),
                 'password' => $userPassword,
-                'role_id' => $req->input('role'),
+                'role_id'  => $req->input('role'),
+                'mesa_id'  => $esTestigo ? $req->input('mesa_id') : null,
             ]);
 
             return redirect()->route('usuarios.registrar.vista')->with('alerta', [
-                "icon" => "success",
-                "title" => "Usuario registrado",
-                "text" => "El usuario ha sido registrado exitosamente",
+                "icon"              => "success",
+                "title"             => "Usuario registrado",
+                "text"              => "El usuario ha sido registrado exitosamente",
                 "confirmButtonText" => "aceptar"
             ]);
         } catch (\Throwable $th) {
             return back()->with('alerta', [
-                "icon" => "error",
-                "title" => "Error en el servidor",
-                "text" => "Espera unos minutos e intenta nuevamente",
+                "icon"              => "error",
+                "title"             => "Error en el servidor",
+                "text"              => "Espera unos minutos e intenta nuevamente",
                 "confirmButtonText" => "aceptar"
             ])->withInput($req->except(['password']));
         }
+    }
+
+    public function getPuestosPorMunicipio(Request $req)
+    {
+        $municipioId = $req->query('municipio_id');
+        $puestos = Puesto::where('municipio_id', $municipioId)
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+        return response()->json($puestos);
+    }
+
+    public function getMesasPorPuesto(Request $req)
+    {
+        $puestoId = $req->query('puesto_id');
+        $mesas = Mesa::where('puesto_id', $puestoId)
+            ->orderBy('descripcion')
+            ->get(['id', 'descripcion']);
+        return response()->json($mesas);
     }
 
     public function loginUsuario(Request $req)
@@ -87,9 +115,14 @@ class usuariosController extends Controller
         try {
             $user = User::find($id);
 
-            $user->name = $req->input('name_editar');
-            $user->email = $req->input('email_editar');
+            $user->name    = $req->input('name_editar');
+            $user->email   = $req->input('email_editar');
             $user->role_id = $req->input('role_editar');
+
+            $role = Role::find($req->input('role_editar'));
+            $user->mesa_id = ($role && $role->slug === 'testigo')
+                ? $req->input('mesa_id_editar')
+                : null;
 
             if ($req->input('password_editar')) {
                 $user->password = Hash::make($req->input('password_editar'), [
