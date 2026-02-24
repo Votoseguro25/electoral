@@ -29,31 +29,6 @@ use App\Http\Controllers\votantesController;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\MovilizacionController;
 
-Route::get('/', [indexController::class, 'index'])->middleware(Authenticate::class)->name('inicio');
-
-Route::get('/AK', [ReporteController::class, 'AK'])->name('AK.index');
-Route::post('/gemini/process', [ReporteController::class, 'process'])->name('gemini.process');
-
-Route::middleware('role:testigo,administrador-de-campana')->group(function () {
-    Route::get('/reportar/e14', [ReporteController::class, 'crearReporteE14'])->name('testigos.reportare14');
-    Route::post('/reportar/e14/guardar', [ReporteController::class, 'guardarReporteE14'])->name('testigos.reportare14.guardar');
-    Route::post('/reportar/e14/ia', [ReporteController::class, 'procesarIA'])->name('testigos.reportare14.ia');
-
-    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->name('testigos.reportare14Camara');
-    Route::post('/reportar/e14/iaCamara', [ReporteController::class, 'procesarIACamara'])->name('testigos.reportare14.iaCamara');
-    Route::post('/reportar/e14/guardarCamara', [ReporteController::class, 'guardarReporteE14Camara'])->name('testigos.reportare14.guardarCamara');
-
-
-    Route::prefix('testigos/e14')->name('testigos.e14.')->group(function () {
-        Route::get('/', [ReporteController::class, 'index'])->name('index');
-        Route::get('/listar', [ReporteController::class, 'listar'])->name('listar');
-        Route::get('/{id}', [ReporteController::class, 'ver'])->name('ver');
-        Route::put('/{id}', [ReporteController::class, 'actualizar'])->name('actualizar');
-        Route::delete('/{id}', [ReporteController::class, 'eliminar'])->name('eliminar');
-    });
-});
-
-
 Route::prefix('usuarios')->group(function () {
 
     Route::middleware('guest')->group(function () {
@@ -80,8 +55,32 @@ Route::prefix('usuarios')->group(function () {
     });
 });
 
-
+//rutas que necesitan autenticación
 Route::middleware([Authenticate::class])->group(function () {
+    Route::get('/', [indexController::class, 'index'])->middleware(Authenticate::class)->name('inicio');
+
+    Route::get('/AK', [ReporteController::class, 'AK'])->name('AK.index');
+    Route::post('/gemini/process', [ReporteController::class, 'process'])->name('gemini.process');
+
+    Route::middleware('role:testigo,administrador-de-campana')->group(function () {
+        Route::get('/reportar/e14', [ReporteController::class, 'crearReporteE14'])->name('testigos.reportare14');
+        Route::post('/reportar/e14/guardar', [ReporteController::class, 'guardarReporteE14'])->name('testigos.reportare14.guardar');
+        Route::post('/reportar/e14/ia', [ReporteController::class, 'procesarIA'])->name('testigos.reportare14.ia');
+
+        Route::post('/reportar/e14/iaCamara', [ReporteController::class, 'procesarIACamara'])->name('testigos.reportare14.iaCamara');
+        Route::post('/reportar/e14/guardarCamara', [ReporteController::class, 'guardarReporteE14Camara'])->name('testigos.reportare14.guardarCamara');
+    });
+
+    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo')->name('testigos.reportare14Camara');
+
+    Route::prefix('testigos/e14')->middleware('role:administrador-de-campana')->name('testigos.e14.')->group(function () {
+        Route::get('/', [ReporteController::class, 'index'])->name('index');
+        Route::get('/listar', [ReporteController::class, 'listar'])->name('listar');
+        Route::get('/{id}', [ReporteController::class, 'ver'])->name('ver');
+        Route::put('/{id}', [ReporteController::class, 'actualizar'])->name('actualizar');
+        Route::delete('/{id}', [ReporteController::class, 'eliminar'])->name('eliminar');
+    });
+
 
     // Rutas para filtros
     Route::get('/api/camara/departamentos', [ReporteController::class, 'getDepartamentosCamara']);
@@ -89,17 +88,18 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/api/camara/puestos', [ReporteController::class, 'getPuestosCamara']);
     Route::get('/api/camara/mesas', [ReporteController::class, 'getMesasCamara']);
     Route::get('/api/reportecandidatosCamara', [ReporteController::class, 'reporteCandidatosCamaraFiltros']);
-        
-    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin,administrador-de-campana')->name('reporte.CandidatosCamaraFiltros');
-    
 
-    Route::middleware('role:admin,administrador-de-campana')->group(function () {
+    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin,administrador-de-campana')->name('reporte.CandidatosCamaraFiltros');
+
+
+    Route::middleware('role:admin')->group(function () {
         Route::get('/reporteVotos', [reporteController::class, 'reporteVotos'])->name('reporte.votos');
         Route::get('/votos/candidatos', [ReporteController::class, 'Candidatos'])->name('reporte.candidatos');
         Route::get('/api/reporte-candidatos', [ReporteController::class, 'reporteCandidatos']);
-        Route::get('/votos/candidatosCamara', [ReporteController::class, 'CandidatosCamara'])->name('reporte.candidatosCamara');
-        Route::get('/api/reporte-candidatosCamara', [ReporteController::class, 'reporteCandidatosCamara']);
     });
+    
+    Route::get('/api/reporte-candidatosCamara', [ReporteController::class, 'reporteCandidatosCamara']);
+    Route::get('/votos/candidatosCamara', [ReporteController::class, 'CandidatosCamara'])->middleware('role:administrador-de-campana')->name('reporte.candidatosCamara');
 
     Route::get('/votos/partidos', [ReporteController::class, 'Partidos'])->name('reporte.partidos');
     Route::get('/api/reporte-partidos', [ReporteController::class, 'reportePartidos']);
@@ -111,7 +111,7 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/export-votos', [reporteController::class, 'exportAll'])->name('export.todos');
 
     Route::prefix('votantes')->group(function () {
-        Route::get('/reportarvoto', [votantesController::class, 'reportarVotoVista'])->middleware('role:lider,administrador-de-campana')->name('votantes.reportarvoto.vista');
+        Route::get('/reportarvoto', [votantesController::class, 'reportarVotoVista'])->middleware('role:lider')->name('votantes.reportarvoto.vista');
         Route::middleware('role:admin,administrador-de-campana')->group(function () {
             Route::post('/reportarvoto/buscar', [reporteController::class, 'buscarVotante'])->name('votantes.reportarvoto.buscar');
             Route::post('/reportarvoto/confirmar', [reporteController::class, 'confirmarVoto'])->name('votantes.reportarvoto.confirmar');
@@ -172,33 +172,33 @@ Route::middleware([Authenticate::class])->group(function () {
 
     Route::prefix('mapa')->group(function () {
         Route::get('/resultado', [MapaController::class, 'mostrarResultado']);
-        Route::get('/votantes-registrados', [MapaController::class, 'mostrarVotantesRegistrados'])->name('mapa.votantes.registrados');
+        Route::get('/votantes-registrados', [MapaController::class, 'mostrarVotantesRegistrados'])->middleware('role:admin-de-campana')->name('mapa.votantes.registrados');
 
     });
 
 
-    Route::prefix('api')->group(function(){
+    Route::prefix('api')->group(function () {
         // Resultados agregados
-        Route::get('/resultados/departamentos',          [MapaController::class, 'resultadosPorDepartamento']);
-        Route::get('/resultados/municipios',             [MapaController::class, 'resultadosPorMunicipio']);
+        Route::get('/resultados/departamentos', [MapaController::class, 'resultadosPorDepartamento']);
+        Route::get('/resultados/municipios', [MapaController::class, 'resultadosPorMunicipio']);
 
         // Ganadores
-        Route::get('/resultados/departamentos/ganador',  [MapaController::class, 'ganadorPorDepartamento']);
-        Route::get('/resultados/municipios/ganador',     [MapaController::class, 'ganadorPorMunicipio']);
+        Route::get('/resultados/departamentos/ganador', [MapaController::class, 'ganadorPorDepartamento']);
+        Route::get('/resultados/municipios/ganador', [MapaController::class, 'ganadorPorMunicipio']);
 
         // Resúmenes
-        Route::get('/resultados/departamentos/resumen',  [MapaController::class, 'resumenDepartamentos']);
-        Route::get('/resultados/municipios/resumen',     [MapaController::class, 'resumenMunicipios']);
+        Route::get('/resultados/departamentos/resumen', [MapaController::class, 'resumenDepartamentos']);
+        Route::get('/resultados/municipios/resumen', [MapaController::class, 'resumenMunicipios']);
 
         // Votantes registrados
-        Route::get('/votantes/departamentos',            [MapaController::class, 'votantesPorDepartamento']);
-        Route::get('/votantes/municipios',               [MapaController::class, 'votantesPorMunicipio']);
+        Route::get('/votantes/departamentos', [MapaController::class, 'votantesPorDepartamento']);
+        Route::get('/votantes/municipios', [MapaController::class, 'votantesPorMunicipio']);
 
     });
 
     // Movilizacion Dia D
     Route::prefix('movilizacion')->group(function () {
-        Route::get('/', [MovilizacionController::class, 'index'])->name('movilizacion.index');
+        Route::get('/', [MovilizacionController::class, 'index'])->middleware('role:admin-de-campana')->name('movilizacion.index');
         Route::get('/exportar', [MovilizacionController::class, 'exportarPendientes'])->name('movilizacion.exportar');
 
         // API endpoints

@@ -158,7 +158,7 @@
 
 
 
-                @canAccessRoute('testigos.reportare14')
+                @canAccessRoute('testigos.reportare14Camara')
                 <li>
                     <a href="{{route('testigos.reportare14Camara')}}"> <i class="fa-solid fa-pencil-square-o"></i>
                         Reportar E14
