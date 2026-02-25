@@ -20,17 +20,17 @@ class indexController extends Controller
         $totalHombres = Persona::where('genero_id', '1')->count();
         $totalMujeres = Persona::where('genero_id', '2')->count();
 
-        $totalVotantes = datos::where('departamento', 'CHOCO')->sum('total');
+        $totalVotantes = datos::where('departamento', 'SAN ANDRES')->sum('total');
 
         //$TotalReal=DATOS::where('departamento','CHOCO')->sum('total');
 
         $totalVotaron = Persona::where('reporte_voto', true)->count();
 
-        $abstencion = $totalRegistrados > 0
+        $abstencion = $totalVotantes > 0
             ? round(($totalVotantes - $totalVotantes * 0.47), 1)
             : 0;
 
-        $minimoParaGanar = $totalVotaron > 0
+        $minimoParaGanar = $totalVotantes > 0
             ? floor($abstencion * 0.1983)
             : 0;
 
