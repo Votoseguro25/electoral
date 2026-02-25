@@ -63,12 +63,7 @@ class rolesController extends Controller
             }
 
             $role->nombre = $req->input('nombre');
-            
-            // Solo regenerar slug si no es admin
-            if ($role->slug !== 'admin') {
-                $role->slug = $this->generarSlug($req->input('nombre'));
-            }
-            
+                        
             $role->descripcion = $req->input('descripcion');
             $role->save();
 

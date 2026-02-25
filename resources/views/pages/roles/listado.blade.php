@@ -97,7 +97,6 @@
                         <thead>
                             <tr>
                                 <th class="text-center">Nombre</th>
-                                <th class="text-center">Slug</th>
                                 <th class="text-center">Descripción</th>
                                 <th class="text-center">Usuarios</th>
                                 <th class="text-center">Acciones</th>
@@ -107,7 +106,6 @@
                             @foreach ($roles as $role)
                                 <tr>
                                     <td class="text-center align-middle">{{ $role->nombre }}</td>
-                                    <td class="text-center align-middle"><code>{{ $role->slug }}</code></td>
                                     <td class="text-center align-middle">{{ $role->descripcion ?? 'Sin descripción' }}</td>
                                     <td class="text-center align-middle">
                                         <span class="badge badge-info">{{ $role->users()->count() }}</span>
