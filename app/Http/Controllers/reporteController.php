@@ -718,17 +718,62 @@ public function actualizar(Request $request, $id)
     }
 }
 
-    public function eliminar($id)
-    {
-        try {
-            DB::table('reportare14')->where('ID', $id)->delete();
-            return response()->json(['message' => 'Eliminado correctamente']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al eliminar'], 500);
+ public function eliminar($id)
+{
+    DB::beginTransaction();
+
+    try {
+
+        // 🔹 1. Obtener el registro primero
+        $e14 = DB::table('reportare14')->where('ID', $id)->first();
+
+        if (!$e14) {
+            return response()->json([
+                'error' => 'Registro no encontrado'
+            ], 404);
         }
+
+        // 🔹 2. Eliminar archivo físico si existe
+        if (!empty($e14->ARCHIVO)) {
+            $rutaArchivo = public_path($e14->ARCHIVO);
+
+            if (file_exists($rutaArchivo)) {
+                unlink($rutaArchivo);
+            }
+        }
+
+        // 🔹 3. Eliminar registros relacionados
+        DB::table('Votos_candidatosCam')
+            ->where('e14', $id)
+            ->delete();
+
+        DB::table('reporte_votos_camara')
+            ->where('e14', $id)
+            ->delete();
+
+        DB::table('reporte_votos_candidatos')
+            ->where('e14', $id)
+            ->delete();
+
+        // 🔹 4. Eliminar reporte principal
+        DB::table('reportare14')
+            ->where('ID', $id)
+            ->delete();
+
+        DB::commit();
+
+        return response()->json(['message' => 'Eliminado correctamente']);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'error' => 'Error al eliminar',
+            'detalle' => $e->getMessage()
+        ], 500);
     }
-
-
+}
 
 
 
