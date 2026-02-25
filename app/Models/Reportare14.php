@@ -13,6 +13,7 @@ class Reportare14 extends Model
 
     protected $fillable = [
         'E14_ID',
+        "Formulario_Identificacion",
         'DEPARTAMENTO',
         'MUNICIPIO',
         'PUESTO',

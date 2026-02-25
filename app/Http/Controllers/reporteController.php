@@ -798,11 +798,17 @@ REGLAS DE CALCULO:
 - Detectar concentracion de votos si un candidato supera 80% del total del partido
 - Validar suma de partidos contra total urna E-14 y E-11
 
+OBTENER IDENTIFICACION DEL FORMULARIO:
+- Es obligatorio obtener la identificacion del formulario E-14.
+- La identificación es un número de serie único impreso bajo su código de barras en la parte superior.
+- Estrictamente solo debes usar ese número como valor del campo "identificacion". No incluyas texto adicional ni etiquetas.
+
 USA LA SIGUIENTE PLANTILLA BASE.
 SOLO REEMPLAZA LOS VALORES.
 NO CAMBIES LLAVES NI ORDEN.
 
 {
+"identificacion":"",
   "ubicacion": {
     "departamento": "",
     "municipio": "",
@@ -915,7 +921,18 @@ public function guardarReporteE14Camara(Request $request)
     }
 
     try {
-        DB::beginTransaction();
+        DB::beginTransaction();        
+        // -----------------------------
+        // Procesar JSON de la IA
+        // -----------------------------
+        $jsonIA = json_decode($request->json_ia, true);
+
+        if(Reportare14::where('Formulario_Identificacion', $jsonIA['identificacion'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya se ha subido este formulario E-14 previamente.'
+            ], 400);
+        }
 
         // -----------------------------
         // Guardar archivo en /public/e14/
@@ -934,11 +951,6 @@ public function guardarReporteE14Camara(Request $request)
             $archivoPath = 'e14/' . $nombreArchivo;
         }
 
-        // -----------------------------
-        // Procesar JSON de la IA
-        // -----------------------------
-        $jsonIA = json_decode($request->json_ia, true);
-
         $votosBlanco = (int)($request->votos_blanco ?? 0);
         $votosNulos = (int)($request->votos_nulos ?? 0);
         $votosNoMarcados = (int)($request->votos_no_marcados ?? 0);
@@ -953,6 +965,7 @@ public function guardarReporteE14Camara(Request $request)
         // -----------------------------
         $e14 = Reportare14::create([
             'E14_ID' => 'E14-' . uniqid(),
+            "Formulario_Identificacion" => $jsonIA['identificacion'] ?? 'Sin identificación',
             'DEPARTAMENTO' => $request->departamento_id,
             'MUNICIPIO' => $request->municipio_id,
             'PUESTO' => $request->puesto_id,
