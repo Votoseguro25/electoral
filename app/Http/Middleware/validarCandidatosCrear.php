@@ -23,7 +23,7 @@ class validarCandidatosCrear
 
         $reglas = [
             "nombre" => "required|string|max:150",
-            "Tarjeton" => "required|integer|min:1|unique:candidatos,Tarjeton",
+            "Tarjeton" => "required|integer|min:1",
             "foto" => "nullable|image|mimes:jpeg,jpg,png,gif|max:5120", // 5MB max
             "color" => "required|string|regex:/^#[0-9A-Fa-f]{6}$/",
             "partido" => "nullable|integer|exists:partido,id",
