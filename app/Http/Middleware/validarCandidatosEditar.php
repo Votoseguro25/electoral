@@ -35,7 +35,7 @@ class validarCandidatosEditar
 
         $reglas = [
             "nombre" => "required|string|max:150",
-            "Tarjeton" => "required|integer|min:1",
+            "Tarjeton" => "required|integer|min:0",
             "foto" => "nullable|image|mimes:jpeg,jpg,png,gif|max:5120", // 5MB max
             "color" => "required|string|regex:/^#[0-9A-Fa-f]{6}$/",
             "partido" => "nullable|integer|exists:partido,id",
@@ -61,7 +61,7 @@ class validarCandidatosEditar
 
             "Tarjeton.required" => "El campo Tarjetón es obligatorio.",
             "Tarjeton.integer" => "El campo Tarjetón debe ser un número entero.",
-            "Tarjeton.min" => "El campo Tarjetón debe ser mayor a 0.",
+            "Tarjeton.min" => "El campo Tarjetón debe ser mayor o igual a 0.",
             "Tarjeton.unique" => "Este número de Tarjetón ya está en uso por otro candidato.",
 
             "foto.image" => "El archivo debe ser una imagen.",

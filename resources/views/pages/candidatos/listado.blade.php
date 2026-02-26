@@ -96,7 +96,7 @@
                                                     $valorTarjeton = session('error_crear') && !$errors->has('Tarjeton') ? old('Tarjeton') : null;
                                                 @endphp
 
-                                                <input type="number" min="1" id="tarjeton" name="Tarjeton"
+                                                <input type="text" inputmode="numeric" id="tarjeton" name="Tarjeton"
                                                     placeholder="Número de tarjetón" value="{{$valorTarjeton}}"
                                                     class="{{$hayErrorTarjeton ? "is-invalid" : null}} form-control">
                                             </div>
@@ -379,7 +379,7 @@
                                                                             $valorTarjeton = $hayErrorTarjeton ? old('Tarjeton') : $candidato->Tarjeton;
                                                                         @endphp
 
-                                                                        <input type="number" min="1"
+                                                                        <input type="text" inputmode="numeric"
                                                                             id="tarjeton-{{$candidato->id}}" name="Tarjeton"
                                                                             placeholder="Número de tarjetón"
                                                                             value="{{$valorTarjeton}}"
