@@ -45,6 +45,7 @@ class usuariosController extends Controller
                 'password' => $userPassword,
                 'role_id'  => $req->input('role'),
                 'mesa_id'  => $esTestigo ? $req->input('mesa_id') : null,
+                'estado'   => $req->has('estado'),
             ]);
 
             return redirect()->route('usuarios.registrar.vista')->with('alerta', [
@@ -94,6 +95,18 @@ class usuariosController extends Controller
             ])->withInput($req->only('email'));
         }
 
+        if (!Auth::user()->estado) {
+            Auth::logout();
+            $req->session()->invalidate();
+            $req->session()->regenerateToken();
+            return back()->with('alerta', [
+                "icon" => "error",
+                "title" => "Acceso deshabilitado",
+                "text" => "Tu cuenta ha sido deshabilitada. Contacta al administrador.",
+                "confirmButtonText" => "aceptar"
+            ])->withInput($req->only('email'));
+        }
+
         $req->session()->regenerate();
 
         return redirect()->intended(route('inicio'));
@@ -118,6 +131,7 @@ class usuariosController extends Controller
             $user->name    = $req->input('name_editar');
             $user->email   = $req->input('email_editar');
             $user->role_id = $req->input('role_editar');
+            $user->estado  = $req->has('estado_editar');
 
             $role = Role::find($req->input('role_editar'));
             $user->mesa_id = ($role && $role->slug === 'testigo')

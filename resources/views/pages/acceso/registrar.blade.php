@@ -105,6 +105,19 @@
                                         </div>
                                     </div>
 
+                                    {{-- Estado del usuario --}}
+                                    <div class="row form-group">
+                                        <div class="col col-md-12">
+                                            <div class="d-flex align-items-center">
+                                                <div class="input-group-addon mr-2"><i class="bi bi-toggle-on"></i></div>
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="1" checked>
+                                                    <label class="custom-control-label" for="estado">Usuario habilitado</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {{-- Campos adicionales para testigo --}}
                                     <div id="testigo-fields" style="display:none;">
                                         <hr>
@@ -196,6 +209,7 @@
                                 <th class="text-center">Nombre</th>
                                 <th class="text-center">Correo</th>
                                 <th class="text-center">Rol</th>
+                                <th class="text-center">Estado</th>
                                 <th class="text-center">Última vez visto</th>
                                 <th class="text-center">Acciones</th>
                             </tr>
@@ -207,6 +221,13 @@
                                     <td class="text-center align-middle">{{ $usuario->email }}</td>
                                     <td class="text-center align-middle">
                                         <span class="badge badge-primary">{{ $usuario->role->nombre ?? 'Sin rol' }}</span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        @if($usuario->estado)
+                                            <span class="badge badge-success">Habilitado</span>
+                                        @else
+                                            <span class="badge badge-danger">Deshabilitado</span>
+                                        @endif
                                     </td>
                                     <td class="text-center align-middle">
                                         {{ $usuario->last_seen() ?? 'Nunca' }}
@@ -340,7 +361,23 @@
                                                                     @endif
                                                                 </div>
                                                             </div>
-                                                            {{-- Campos de testigo para edición --}}
+                                                            {{-- Estado del usuario --}}
+                                            <div class="row form-group">
+                                                <div class="col col-md-12">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="input-group-addon mr-2"><i class="bi bi-toggle-on"></i></div>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="estado_editar_{{$usuario->id}}"
+                                                                name="estado_editar" value="1"
+                                                                {{ $usuario->estado ? 'checked' : '' }}>
+                                                            <label class="custom-control-label" for="estado_editar_{{$usuario->id}}">Usuario habilitado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Campos de testigo para edición --}}
                                                             <div id="testigo-fields-edit-{{$usuario->id}}" style="display:none;">
                                                                 <hr>
                                                                 <p class="text-muted mb-2"><i class="bi bi-geo-alt"></i> Asignación de mesa</p>
