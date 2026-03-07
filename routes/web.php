@@ -72,9 +72,11 @@ Route::middleware([Authenticate::class])->group(function () {
     });
 
     Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo')->name('testigos.reportare14Camara');
-
-    Route::prefix('testigos/e14')->middleware('role:administrador-de-campana')->name('testigos.e14.')->group(function () {
+    
+     
+    Route::prefix('testigos/e14')->middleware('role:administrador-de-campana,visualizador')->name('testigos.e14.')->group(function () {
         Route::get('/', [ReporteController::class, 'index'])->name('index');
+        Route::put('/{id}/estado', [ReporteController::class, 'cambiarEstado'])->name('testigos.e14.estado');  
         Route::get('/listar', [ReporteController::class, 'listar'])->name('listar');
         Route::get('/{id}', [ReporteController::class, 'ver'])->name('ver');
         Route::put('/{id}', [ReporteController::class, 'actualizar'])->name('actualizar');

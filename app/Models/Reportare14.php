@@ -25,6 +25,8 @@ class Reportare14 extends Model
         'SUMA_VOTOS-E14',
         'OBSERVACION',
         'ARCHIVO',
+        'Estado',
+        'NOVEDAD',
         'TESTIGO',
     ];
 

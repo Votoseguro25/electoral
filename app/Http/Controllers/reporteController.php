@@ -653,42 +653,82 @@ public function guardarReporteE14(Request $request)
 
 
 public function index()
-    {
-        $departamentos = DB::table('departamentos')->get();
-        $municipios = DB::table('municipios')->get();
-        $puestos = DB::table('puestos')->get();
+{
+    $departamentos = DB::table('departamentos')->get();
+    $municipios = DB::table('municipios')->get();
+    $puestos = DB::table('puestos')->get();
+    
+    // Pasar el rol del usuario a la vista para ocultar/mostrar elementos si es necesario
+    $userRoleId = auth()->user()->role_id;
 
-        return view('pages.testigos.e14s', compact('departamentos', 'municipios', 'puestos'));
-    }
+    return view('pages.testigos.e14s', compact('departamentos', 'municipios', 'puestos', 'userRoleId'));
+}
 
-    public function listar()
-    {
-        try {
-            $e14s = DB::table('reportare14')->orderBy('ID', 'desc')->get();
-            return response()->json(['data' => $e14s]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al cargar datos'], 500);
+   public function listar()
+{
+    try {
+        $user = auth()->user();
+        
+        // Si el usuario tiene rol_id = 3 (Testigo), solo ve sus propios registros
+        if ($user->role_id == 3) {
+            $e14s = DB::table('reportare14')
+                ->where('TESTIGO', $user->id)
+                ->orderBy('ID', 'desc')
+                ->get();
+        } else {
+            // Admin, Líder u otros roles ven todos los registros
+            $e14s = DB::table('reportare14')
+                ->orderBy('ID', 'desc')
+                ->get();
         }
+        
+        return response()->json(['data' => $e14s]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al cargar datos: ' . $e->getMessage()], 500);
     }
+}
 
     public function ver($id)
-    {
-        try {
-            $e14 = DB::table('reportare14')->where('ID', $id)->first();
-            
-            if (!$e14) {
-                return response()->json(['error' => 'No encontrado'], 404);
-            }
-
-            return response()->json(['data' => $e14]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al cargar datos'], 500);
+{
+    try {
+        $user = auth()->user();
+        
+        $query = DB::table('reportare14')->where('ID', $id);
+        
+        // Si es testigo (role_id = 3), verificar que sea su registro
+        if ($user->role_id == 3) {
+            $query->where('TESTIGO', $user->id);
         }
+        
+        $e14 = $query->first();
+        
+        if (!$e14) {
+            return response()->json(['error' => 'No encontrado o no tiene permisos'], 404);
+        }
+
+        return response()->json(['data' => $e14]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al cargar datos'], 500);
     }
+}
 
 public function actualizar(Request $request, $id)
 {
     try {
+        $user = auth()->user();
+        
+        // Si es testigo (role_id = 3), verificar que sea su registro
+        if ($user->role_id == 3) {
+            $registro = DB::table('reportare14')
+                ->where('ID', $id)
+                ->where('TESTIGO', $user->id)
+                ->first();
+                
+            if (!$registro) {
+                return response()->json(['error' => 'No tiene permisos para editar este registro'], 403);
+            }
+        }
+        
         $affected = DB::update("
             UPDATE reportare14 SET
                 MESA = ?,
@@ -718,22 +758,34 @@ public function actualizar(Request $request, $id)
     }
 }
 
- public function eliminar($id)
+// =============================================
+// MÉTODO ELIMINAR - Eliminar un E14
+// Verificación de permisos: Testigo solo elimina sus registros
+// =============================================
+public function eliminar($id)
 {
     DB::beginTransaction();
 
     try {
-
-        // 🔹 1. Obtener el registro primero
-        $e14 = DB::table('reportare14')->where('ID', $id)->first();
+        $user = auth()->user();
+        
+        // Obtener el registro primero
+        $query = DB::table('reportare14')->where('ID', $id);
+        
+        // Si es testigo (role_id = 3), verificar que sea su registro
+        if ($user->role_id == 3) {
+            $query->where('TESTIGO', $user->id);
+        }
+        
+        $e14 = $query->first();
 
         if (!$e14) {
             return response()->json([
-                'error' => 'Registro no encontrado'
+                'error' => 'Registro no encontrado o no tiene permisos'
             ], 404);
         }
 
-        // 🔹 2. Eliminar archivo físico si existe
+        // Eliminar archivo físico si existe
         if (!empty($e14->ARCHIVO)) {
             $rutaArchivo = public_path($e14->ARCHIVO);
 
@@ -742,7 +794,7 @@ public function actualizar(Request $request, $id)
             }
         }
 
-        // 🔹 3. Eliminar registros relacionados
+        // Eliminar registros relacionados
         DB::table('Votos_candidatosCam')
             ->where('e14', $id)
             ->delete();
@@ -755,7 +807,7 @@ public function actualizar(Request $request, $id)
             ->where('e14', $id)
             ->delete();
 
-        // 🔹 4. Eliminar reporte principal
+        // Eliminar reporte principal
         DB::table('reportare14')
             ->where('ID', $id)
             ->delete();
@@ -774,20 +826,6 @@ public function actualizar(Request $request, $id)
         ], 500);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1022,7 +1060,10 @@ public function guardarReporteE14Camara(Request $request)
             'SUMA_VOTOS-E14' => $sumaVotosE14,
             'OBSERVACION' => $request->observaciones ?? '',
             'ARCHIVO' => $archivoPath,
+            'Estado'=>0,
+            'NOVEDAD'=>'',
             'TESTIGO' => $testigo->id,
+            
         ]);
 
         // -----------------------------
@@ -1074,8 +1115,66 @@ public function guardarReporteE14Camara(Request $request)
     }
 }
 
+// =============================================
+// MÉTODO CAMBIAR ESTADO - Marcar como revisado
+// Solo Admin o roles superiores pueden cambiar estado (opcional)
+// =============================================
+public function cambiarEstado(Request $request, $id)
+{
+    try {
+        $user = auth()->user();
+        
+        // Opcional: Si quieres que solo Admin/Líder puedan cambiar estado, descomenta esto:
+        // if ($user->role_id == 3) {
+        //     return response()->json(['error' => 'No tiene permisos para cambiar el estado'], 403);
+        // }
+        
+        $estado = (int) $request->input('Estado', 1);
+        $novedad = $request->input('NOVEDAD', '');
+        
+        // Validar que si es estado 2 (con novedad), tenga texto de novedad
+        if ($estado === 2 && empty($novedad)) {
+            return response()->json([
+                'error' => 'Debe proporcionar una descripción de la novedad'
+            ], 422);
+        }
 
+        // Si el estado es 1 (sin novedad), limpiar el campo NOVEDAD
+        if ($estado === 1) {
+            $novedad = '';
+        }
+
+        $updateData = [
+            'Estado' => $estado,
+            'NOVEDAD' => $novedad
+        ];
+
+        $affected = DB::table('reportare14')
+            ->where('ID', $id)
+            ->update($updateData);
+
+        if ($affected === 0) {
+            return response()->json(['error' => 'Registro no encontrado'], 404);
+        }
+
+        $mensajes = [
+            0 => 'Estado restablecido a pendiente',
+            1 => 'Marcado como revisado sin novedad',
+            2 => 'Marcado como revisado con novedad'
+        ];
+
+        return response()->json([
+            'message' => $mensajes[$estado] ?? 'Estado actualizado correctamente',
+            'estado' => $estado,
+            'NOVEDAD' => $novedad
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error al cambiar estado: ' . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
 
 }
 
+}
 

@@ -63,20 +63,31 @@
                     </label>
                     <input type="text" id="filtro-e14id" class="form-control" placeholder="Buscar por E14_ID...">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">
                         <i class="bi bi-search text-primary mr-1"></i>Buscar Mesa
                     </label>
                     <input type="text" id="filtro-mesa" class="form-control" placeholder="Buscar por mesa...">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">
-                        <i class="bi bi-check2-circle text-primary mr-1"></i>Estado de Coincidencia
+                        <i class="bi bi-check2-circle text-primary mr-1"></i>Coincidencia
                     </label>
                     <select id="filtro-coincidencia" class="form-control">
                         <option value="">Todos los registros</option>
                         <option value="iguales">E14 correctos (sin diferencia)</option>
                         <option value="diferentes">Con discrepancia</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-flag text-primary mr-1"></i>Estado Revisión
+                    </label>
+                    <select id="filtro-estado" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="0">Sin revisar</option>
+                        <option value="1">Revisado sin novedad</option>
+                        <option value="2">Revisado con novedad</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
@@ -93,7 +104,7 @@
                 <table class="table table-hover" id="tabla-e14">
                     <thead class="bg-primary text-white">
                         <tr>
-                            <th>E14_ID</th>
+                            <!--<th>E14_ID</th>-->
                             <th>Departamento</th>
                             <th>Municipio</th>
                             <th>Puesto</th>
@@ -102,12 +113,13 @@
                             <th>Total Votos</th>
                             <th>Suma Votos</th>
                             <th>Diferencia</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-e14">
                         <tr>
-                            <td colspan="10" class="text-center py-5">
+                            <td colspan="11" class="text-center py-5">
                                 <div class="spinner-border text-primary" role="status"></div>
                                 <p class="mt-3 text-muted">Cargando reportes...</p>
                             </td>
@@ -169,6 +181,72 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Cambiar Estado --}}
+<div class="modal fade" id="modalCambiarEstado" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-clipboard-check mr-2"></i>Marcar como Revisado
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="estadoE14Id">
+                
+                <p class="text-muted mb-4">Selecciona el tipo de revisión para este reporte E14:</p>
+                
+                {{-- Botones de selección --}}
+                <div class="d-grid gap-3 mb-4">
+                    <button type="button" class="btn btn-lg btn-outline-success py-3 btn-revision d-flex align-items-center" data-tipo="sin-novedad">
+                        <i class="bi bi-check-circle-fill mr-3" style="font-size: 1.5rem;"></i>
+                        <div class="text-left">
+                            <span class="fw-bold d-block">Revisado SIN Novedad</span>
+                            <small class="text-muted">Todo correcto, sin observaciones</small>
+                        </div>
+                    </button>
+                    
+                    <button type="button" class="btn btn-lg btn-outline-warning py-3 btn-revision d-flex align-items-center" data-tipo="con-novedad">
+                        <i class="bi bi-exclamation-triangle-fill mr-3" style="font-size: 1.5rem;"></i>
+                        <div class="text-left">
+                            <span class="fw-bold d-block">Revisado CON Novedad</span>
+                            <small class="text-muted">Requiere documentar observaciones</small>
+                        </div>
+                    </button>
+                </div>
+                
+                {{-- Textarea para novedad (oculto por defecto) --}}
+                <div id="containerNovedad" class="d-none">
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-info-circle mr-2"></i>
+                        <strong>Describe la novedad encontrada:</strong>
+                    </div>
+                    <textarea 
+                        id="textoNovedad" 
+                        class="form-control" 
+                        rows="4" 
+                        placeholder="Describe detalladamente la novedad encontrada en este reporte E14..."
+                        style="resize: none;"></textarea>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bi bi-lightbulb mr-1"></i>
+                        Ejemplo: Diferencia de votos, datos ilegibles, inconsistencias, etc.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="bi bi-x-lg mr-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary d-none" id="btnConfirmarEstado">
+                    <i class="bi bi-check-lg mr-1"></i>Confirmar Revisión
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
   </div>
 <style>
 .bg-gradient-primary {
@@ -210,25 +288,53 @@
 }
 
 .table tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.05);
     transform: scale(1.01);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Estilos para resaltar filas con discrepancias */
-.table tbody tr.fila-diferente {
-    background-color: rgba(220, 53, 69, 0.1);
+/* =============================================
+   ESTILOS PARA FILAS SEGÚN ESTADO
+   Estado 0 + Diferencia != 0 = Rojo (pendiente con discrepancia)
+   Estado 1 = Verde (revisado sin novedad)
+   Estado 2 = Amarillo (revisado con novedad)
+============================================= */
+
+/* Rojo - Pendiente con discrepancia (sin revisar) */
+.table tbody tr.fila-pendiente-discrepancia {
+    background-color: #f8d7da !important;
+    border-left: 4px solid #dc3545;
 }
 
-.table tbody tr.fila-diferente:hover {
-    background-color: rgba(220, 53, 69, 0.2);
+.table tbody tr.fila-pendiente-discrepancia:hover {
+    background-color: #f1aeb5 !important;
 }
 
-.table tbody tr.fila-igual {
+/* Verde - Revisado sin novedad */
+.table tbody tr.fila-revisado-sin-novedad {
+    background-color: #d1e7dd !important;
+    border-left: 4px solid #198754;
+}
+
+.table tbody tr.fila-revisado-sin-novedad:hover {
+    background-color: #badbcc !important;
+}
+
+/* Amarillo - Revisado con novedad */
+.table tbody tr.fila-revisado-con-novedad {
+    background-color: #fff3cd !important;
+    border-left: 4px solid #ffc107;
+}
+
+.table tbody tr.fila-revisado-con-novedad:hover {
+    background-color: #ffe69c !important;
+}
+
+/* Filas sin discrepancia y sin revisar - color normal */
+.table tbody tr.fila-normal {
     background-color: rgba(25, 135, 84, 0.05);
 }
 
-.table tbody tr.fila-igual:hover {
+.table tbody tr.fila-normal:hover {
     background-color: rgba(25, 135, 84, 0.1);
 }
 
@@ -266,6 +372,33 @@
 .badge.bg-primary {
     background-color: #007bff !important;
     color: #fff;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* Estilos para badges de estado clickeables */
+.badge-estado {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.badge-estado:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+}
+
+.badge-estado.bg-success {
+    cursor: default;
+}
+
+.badge-estado.bg-success:hover {
+    transform: none;
+    opacity: 1;
 }
 
 .modal-body {
@@ -330,6 +463,49 @@
 .close:hover {
     opacity: 1;
 }
+
+/* Estilos para botones de revisión en modal */
+.btn-revision {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.btn-revision:hover {
+    transform: translateX(5px);
+}
+
+.btn-revision.active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.btn-revision[data-tipo="sin-novedad"].active {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: white !important;
+}
+
+.btn-revision[data-tipo="sin-novedad"].active .text-muted {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.btn-revision[data-tipo="con-novedad"].active {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.btn-revision[data-tipo="con-novedad"].active .text-muted {
+    color: rgba(0,0,0,0.6) !important;
+}
+
+.d-grid {
+    display: grid;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
 </style>
 
 @endsection
@@ -344,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let e14DataFiltrada = [];
     let paginaActual = 1;
     const itemsPorPagina = 10;
+    let tipoRevisionSeleccionado = null;
 
     // Datos de índice
     const departamentos = @json($departamentos);
@@ -353,11 +530,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const $modalVer = window.jQuery('#modalVerE14');
     const $modalEditar = window.jQuery('#modalEditarE14');
+    const $modalEstado = window.jQuery('#modalCambiarEstado');
+
+    // =============================================
+    // Función para obtener la clase de la fila según estado
+    // =============================================
+    function getFilaClase(item, diferencia) {
+        const estado = parseInt(item.Estado) || 0;
+
+        if (estado === 1) {
+            // Revisado sin novedad = Verde
+            return 'fila-revisado-sin-novedad';
+        } else if (estado === 2) {
+            // Revisado con novedad = Amarillo
+            return 'fila-revisado-con-novedad';
+        } else {
+            // Estado 0 = Sin revisar
+            if (diferencia !== 0) {
+                // Hay discrepancia = Rojo
+                return 'fila-pendiente-discrepancia';
+            } else {
+                // Sin discrepancia = Normal
+                return 'fila-pendiente-discrepancia';
+            }
+        }
+    }
+
+    // =============================================
+    // Función para generar el badge de estado
+    // =============================================
+    function generarBadgeEstado(item, diferencia) {
+        const estado = parseInt(item.Estado) || 0;
+
+        if (estado === 1) {
+            // Revisado sin novedad - badge verde, no clickeable
+            return `<span class="badge bg-success badge-estado" title="Revisado sin novedad">
+                        <i class="bi bi-check-circle mr-1"></i>Revisado, Sin Novedad
+                    </span>`;
+        } else if (estado === 2) {
+            // Revisado con novedad - badge amarillo, no clickeable
+            const novedad = item.NOVEDAD || 'Sin descripción';
+            return `<span class="badge bg-warning badge-estado" title="${novedad}">
+                        <i class="bi bi-exclamation-triangle mr-1"></i>Revisado, Con Novedad
+                    </span>`;
+        } else {
+            // Estado 0 = Sin revisar
+            if (diferencia !== 0) {
+                // Hay diferencia => Sin revisar CON discrepancia (rojo)
+                return `<span class="badge bg-danger badge-estado" 
+                            onclick="abrirModalEstado(${item.ID})" 
+                            title="Hay diferencia en los votos. Clic para marcar como revisado">
+                            <i class="bi bi-exclamation-circle mr-1"></i>Pendiente
+                        </span>`;
+            } else {
+                // No hay diferencia => Sin revisar (gris)
+                return `<span class="badge bg-danger badge-estado" 
+                            onclick="abrirModalEstado(${item.ID})" 
+                            title="Sin diferencia. Clic para marcar como revisado">
+                            <i class="bi bi-exclamation-circle mr-1"></i>Pendiente
+                        </span>`;
+            }
+        }
+    }
 
     // Cargar datos al inicio
     cargarE14s();
 
-// Filtros
+    // Filtros
     document.getElementById('filtro-departamento').addEventListener('change', function() {
         actualizarMunicipios();
         actualizarPuestos();
@@ -371,6 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('filtro-e14id').addEventListener('input', filtrarTabla);
     document.getElementById('filtro-mesa').addEventListener('input', filtrarTabla);
     document.getElementById('filtro-coincidencia').addEventListener('change', filtrarTabla);
+    document.getElementById('filtro-estado').addEventListener('change', filtrarTabla);
 
     // Función para actualizar municipios según el departamento seleccionado
     function actualizarMunicipios() {
@@ -471,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error cargando E14s:', err);
             document.getElementById('tbody-e14').innerHTML = `
                 <tr>
-                    <td colspan="10" class="text-center py-5 text-danger">
+                    <td colspan="11" class="text-center py-5 text-danger">
                         <i class="bi bi-exclamation-triangle fs-1"></i>
                         <p class="mt-3">Error al cargar los reportes</p>
                     </td>
@@ -503,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-// Función para filtrar tabla
+    // Función para filtrar tabla
     function filtrarTabla() {
         const depId = document.getElementById('filtro-departamento').value;
         const munId = document.getElementById('filtro-municipio').value;
@@ -511,6 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const e14id = document.getElementById('filtro-e14id').value.toLowerCase();
         const mesa = document.getElementById('filtro-mesa').value.toLowerCase();
         const coincidencia = document.getElementById('filtro-coincidencia').value;
+        const estadoFiltro = document.getElementById('filtro-estado').value;
 
         e14DataFiltrada = e14Data.filter(item => {
             const matchDep = !depId || item.DEPARTAMENTO == depId;
@@ -529,8 +770,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (coincidencia === 'diferentes') {
                 matchCoincidencia = diferencia !== 0;
             }
+
+            const matchEstado = estadoFiltro === '' || item.Estado == estadoFiltro;
             
-            return matchDep && matchMun && matchPuesto && matchE14 && matchMesa && matchCoincidencia;
+            return matchDep && matchMun && matchPuesto && matchE14 && matchMesa && matchCoincidencia && matchEstado;
         });
 
         paginaActual = 1;
@@ -548,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (items.length === 0) {
             document.getElementById('tbody-e14').innerHTML = `
                 <tr>
-                    <td colspan="10" class="text-center py-5">
+                    <td colspan="11" class="text-center py-5">
                         <i class="bi bi-inbox fs-1 text-muted"></i>
                         <p class="mt-3 text-muted">No se encontraron reportes</p>
                     </td>
@@ -564,11 +807,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const diferencia = (item['TOTAL_VOTOS-URNA'] || 0) - (item['SUMA_VOTOS-E14'] || 0);
             const badgeClass = diferencia === 0 ? 'bg-success' : 'bg-danger';
-            const filaClass = diferencia === 0 ? 'fila-igual' : 'fila-diferente';
-
+            const filaClass = getFilaClase(item, diferencia);
+            
             return `
                 <tr class="${filaClass}">
-                    <td class="fw-bold">${item.E14_ID || '-'}</td>
                     <td>${dep ? dep.nombre : '-'}</td>
                     <td>${mun ? mun.nombre : '-'}</td>
                     <td>${puesto ? puesto.nombre : '-'}</td>
@@ -577,6 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${item['TOTAL_VOTOS-URNA'] || 0}</td>
                     <td>${item['SUMA_VOTOS-E14'] || 0}</td>
                     <td><span class="badge ${badgeClass}">${diferencia >= 0 ? '+' : ''}${diferencia}</span></td>
+                    <td>${generarBadgeEstado(item, diferencia)}</td>
                     <td>
                         <div class="btn-group" role="group">
                             <button class="btn btn-sm btn-info text-white" onclick="verE14(${item.ID})">
@@ -631,14 +874,120 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función para cambiar página
     window.cambiarPagina = function(pagina) {
-    const totalPaginas = Math.ceil(e14DataFiltrada.length / itemsPorPagina);
+        const totalPaginas = Math.ceil(e14DataFiltrada.length / itemsPorPagina);
 
-    if (pagina < 1 || pagina > totalPaginas) return;
+        if (pagina < 1 || pagina > totalPaginas) return;
 
-    paginaActual = pagina;
-    renderizarTabla();
-    renderizarPaginacion();
-};
+        paginaActual = pagina;
+        renderizarTabla();
+        renderizarPaginacion();
+    };
+
+    // =============================================
+    // Abrir modal para cambiar estado
+    // =============================================
+    window.abrirModalEstado = function(id) {
+        document.getElementById('estadoE14Id').value = id;
+        document.getElementById('containerNovedad').classList.add('d-none');
+        document.getElementById('textoNovedad').value = '';
+        document.getElementById('btnConfirmarEstado').classList.add('d-none');
+        
+        // Resetear botones
+        document.querySelectorAll('.btn-revision').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        tipoRevisionSeleccionado = null;
+        $modalEstado.modal('show');
+    };
+
+    // Manejar selección de tipo de revisión
+    document.querySelectorAll('.btn-revision').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tipo = this.dataset.tipo;
+            
+            // Resetear todos los botones
+            document.querySelectorAll('.btn-revision').forEach(b => b.classList.remove('active'));
+            
+            // Activar el seleccionado
+            this.classList.add('active');
+            tipoRevisionSeleccionado = tipo;
+            
+            // Mostrar/ocultar textarea según tipo
+            const containerNovedad = document.getElementById('containerNovedad');
+            const btnConfirmar = document.getElementById('btnConfirmarEstado');
+            
+            if (tipo === 'con-novedad') {
+                containerNovedad.classList.remove('d-none');
+                btnConfirmar.classList.remove('d-none');
+                document.getElementById('textoNovedad').focus();
+            } else {
+                containerNovedad.classList.add('d-none');
+                btnConfirmar.classList.remove('d-none');
+            }
+        });
+    });
+
+    // Confirmar cambio de estado
+    document.getElementById('btnConfirmarEstado').addEventListener('click', async () => {
+        const id = document.getElementById('estadoE14Id').value;
+        const novedad = document.getElementById('textoNovedad').value.trim();
+        
+        // Validar que si es con novedad, tenga texto
+        if (tipoRevisionSeleccionado === 'con-novedad' && !novedad) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Novedad requerida',
+                text: 'Debes describir la novedad encontrada',
+                confirmButtonColor: '#ffc107'
+            });
+            return;
+        }
+
+        // Estado: 1 = sin novedad, 2 = con novedad
+        const nuevoEstado = tipoRevisionSeleccionado === 'sin-novedad' ? 1 : 2;
+
+        try {
+            Swal.fire({
+                title: 'Guardando...',
+                html: '<div class="spinner-border text-primary"></div>',
+                allowOutsideClick: false,
+                showConfirmButton: false
+            });
+
+            await axios.put(`{{ url('testigos/e14') }}/${id}/estado`, {
+                Estado: nuevoEstado,
+                NOVEDAD: novedad || null
+            }, {
+                headers: { 
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            $modalEstado.modal('hide');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Estado actualizado',
+                text: tipoRevisionSeleccionado === 'sin-novedad' 
+                    ? 'Marcado como revisado sin novedad' 
+                    : 'Marcado como revisado con novedad',
+                confirmButtonColor: nuevoEstado === 1 ? '#198754' : '#ffc107',
+                timer: 2000
+            });
+
+            cargarE14s();
+
+        } catch (err) {
+            console.error('Error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo actualizar el estado'
+            });
+        }
+    });
 
     window.verE14 = async function(id) {
     $modalVer.modal('show');
@@ -722,6 +1071,21 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 }
 
+        // Mostrar estado y novedad
+        let estadoHtml = '';
+        const estado = parseInt(data.Estado) || 0;
+        if (estado === 1) {
+            estadoHtml = `<span class="badge bg-success">Revisado sin novedad</span>`;
+        } else if (estado === 2) {
+            estadoHtml = `
+                <span class="badge bg-warning mb-2">Revisado con novedad</span>
+                <div class="alert alert-warning mt-2 mb-0">
+                    <strong>Novedad:</strong> ${data.NOVEDAD || 'Sin descripción'}
+                </div>
+            `;
+        } else {
+            estadoHtml = `<span class="badge bg-secondary">Sin revisar</span>`;
+        }
 
         const html = `
             <div class="row">
@@ -735,6 +1099,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="info-card">
                         <div class="info-label">Mesa</div>
                         <div class="info-value">${data.MESA || '-'}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="info-card">
+                        <div class="info-label">Estado de Revisión</div>
+                        <div class="info-value">${estadoHtml}</div>
                     </div>
                 </div>
             </div>
