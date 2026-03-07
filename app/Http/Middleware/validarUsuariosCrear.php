@@ -19,7 +19,7 @@ class validarUsuariosCrear
     {
         $reglas = [
             "name"    => "required|string|max:255|unique:users,name",
-            "email"   => "required|string|email|max:255|unique:users,email",
+            "email"   => "required|string|max:255|unique:users,email",
             "password" => "required|string|min:8",
             "role"    => "required|integer|exists:roles,id"
         ];
@@ -38,10 +38,9 @@ class validarUsuariosCrear
         ];
 
         $mensajesEmail = [
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.string'   => 'El correo electrónico debe ser una cadena de texto.',
-            'email.email'    => 'El correo electrónico no es válido.',
-            'email.unique'   => 'El correo electrónico ya está en uso.',
+            'email.required' => 'El usuario de acceso es obligatorio.',
+            'email.string'   => 'El usuario de acceso debe ser una cadena de texto.',            
+            'email.unique'   => 'El usuario de acceso ya está en uso.',
         ];
 
         $mensajesPassword = [

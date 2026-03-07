@@ -50,9 +50,9 @@
                                         <div class="col col-md-12">
                                             <div class="input-group">
                                                 <div class="input-group-addon"><i class="bi bi-envelope"></i></div>
-                                                <input type="email"
+                                                <input type="text"
                                                     class="form-control {{ $errors->has('email') ? 'is-invalid' : null }}"
-                                                    placeholder="correo" id="email" name="email" required
+                                                    placeholder="usuario de acceso" id="email" name="email" required
                                                     value="{{ old('email') }}" />
                                             </div>
 
@@ -198,7 +198,7 @@
 
                 <form method="get" action="#" id="buscador-form" class="d-flex mb-3 mt-3 flex-row">
                     <input type="text" name="consulta" id="buscador" class="form-control" value="{{ $consulta ?? ''}}"
-                        placeholder="Escriba nombre o correo">
+                        placeholder="Escriba nombre o usuario de acceso">
 
                     <button type="submit" class="btn btn-primary">Buscar</button>
                 </form>
@@ -207,7 +207,7 @@
                         <thead>
                             <tr>
                                 <th class="text-center">Nombre</th>
-                                <th class="text-center">Correo</th>
+                                <th class="text-center">usuario de acceso</th>
                                 <th class="text-center">Rol</th>
                                 <th class="text-center">Estado</th>
                                 <th class="text-center">Última vez visto</th>
@@ -302,9 +302,9 @@
                                                                         @php
                                                                             $emailValue = old('email_editar', $usuario->email);
                                                                         @endphp
-                                                                        <input type="email"
+                                                                        <input type="text"
                                                                             class="form-control {{ $errors->has('email_editar') ? 'is-invalid' : null }}"
-                                                                            placeholder="correo" id="email_editar"
+                                                                            placeholder="usuario de acceso" id="email_editar"
                                                                             name="email_editar" required
                                                                             value="{{ $emailValue }}" />
                                                                     </div>

@@ -29,8 +29,7 @@ class validarUsuariosEditar
             ],
             "email_editar" => [
                 "required",
-                "string",
-                "email",
+                "string",                
                 "max:255",
                 Rule::unique('users', 'email')->ignore($id)
             ],
@@ -52,10 +51,9 @@ class validarUsuariosEditar
         ];
 
         $mensajesEmail = [
-            'email_editar.required' => 'El correo electrónico es obligatorio.',
-            'email_editar.string'   => 'El correo electrónico debe ser una cadena de texto.',
-            'email_editar.email'    => 'El correo electrónico no es válido.',
-            'email_editar.unique'   => 'El correo electrónico ya está en uso.',
+            'email_editar.required' => 'El usuario de acceso es obligatorio.',
+            'email_editar.string'   => 'El usuario de acceso debe ser una cadena de texto.',            
+            'email_editar.unique'   => 'El usuario de acceso ya está en uso.',
         ];
 
         $mensajesPassword = [
