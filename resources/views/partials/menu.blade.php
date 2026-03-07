@@ -91,7 +91,8 @@
                         auth()->user()?->canAccessRoute('reporte.candidatosCamara') ||
                         auth()->user()?->canAccessRoute('reporte.CandidatosCamaraFiltros') ||
                         auth()->user()?->canAccessRoute('reporte.partidosCamara') ||
-                        auth()->user()?->canAccessRoute('testigos.e14.index');
+                        auth()->user()?->canAccessRoute('testigos.e14.index') ||
+                        auth()->user()?->canAccessRoute('testigos.reportare14Camara');
                 @endphp
 
                 @if($tieneEstadisticas)
