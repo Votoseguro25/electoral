@@ -154,7 +154,7 @@
             <div class="card-custom card-equal p-3 d-flex flex-column align-items-center">
                 <span class="material-symbols-outlined">how_to_vote</span>
                 <h2 class="h4 font-weight-bold mt-2 mb-1">{{ number_format($abstencion, 0, ',', '.') }}</h2>
-                <p class="text-muted small m-0">Valor Abstención</p>
+                <p class="text-muted small m-0">total de votantes esperados</p>
             </div>
         </div>
 
