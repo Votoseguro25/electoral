@@ -143,7 +143,7 @@
                 @canAccessRoute('reporte.CandidatosCamaraFiltros')
                 <li>
                     <a href="{{route('reporte.CandidatosCamaraFiltros')}}"> <i class="fa-solid  fa-list"></i>
-                        Votos Por Candidato
+                        Votos Por Puesto/Mesa
                     </a>
                 </li>
                 @endcanAccessRoute
@@ -171,7 +171,7 @@
                 @canAccessRoute('testigos.e14.index')
                 <li>
                     <a href="{{ route('testigos.e14.index') }}">
-                        <i class="fa-solid fa-clipboard-list"></i> Ver e14
+                        <i class="fa-solid fa-clipboard-list"></i> Ver E14
                     </a>
                 </li>
                 @endcanAccessRoute
