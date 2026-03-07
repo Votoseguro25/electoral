@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     
-
+    <link rel="icon" href="./public/images/huella.png" type="image/png">
+    
+    
     {{-- estilos propios del template --}}
     <link rel="stylesheet" href="{{env('APP_URL')}}/public/resources/css/global/cs-skin-elastics.css?t={{time()}}">
     <link rel="stylesheet" href="{{env('APP_URL')}}/public/resources/css/global/styles.css?t={{time()}}">
