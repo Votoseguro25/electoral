@@ -37,7 +37,7 @@ Route::prefix('usuarios')->group(function () {
     });
 
     Route::middleware(Authenticate::class)->group(function () {
-        Route::middleware('role:admin')->group(function () {
+        Route::middleware('role:admin,ingeniero-de-sistemas')->group(function () {
             Route::get('/registrar', [usuariosController::class, 'registrarVista'])->name('usuarios.registrar.vista');
 
             Route::post('/registrar', [usuariosController::class, 'registrarUsuario'])
@@ -71,10 +71,10 @@ Route::middleware([Authenticate::class])->group(function () {
         Route::post('/reportar/e14/guardarCamara', [ReporteController::class, 'guardarReporteE14Camara'])->name('testigos.reportare14.guardarCamara');
     });
 
-    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo')->name('testigos.reportare14Camara');
+    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo,ingeniero-de-sistemas')->name('testigos.reportare14Camara');
     
      
-    Route::prefix('testigos/e14')->middleware('role:administrador-de-campana,visualizador')->name('testigos.e14.')->group(function () {
+    Route::prefix('testigos/e14')->middleware('role:administrador-de-campana,visualizador,ingeniero-de-sistemas')->name('testigos.e14.')->group(function () {
         Route::get('/', [ReporteController::class, 'index'])->name('index');
         Route::put('/{id}/estado', [ReporteController::class, 'cambiarEstado'])->name('testigos.e14.estado');  
         Route::get('/listar', [ReporteController::class, 'listar'])->name('listar');
@@ -91,7 +91,7 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/api/camara/mesas', [ReporteController::class, 'getMesasCamara']);
     Route::get('/api/reportecandidatosCamara', [ReporteController::class, 'reporteCandidatosCamaraFiltros']);
 
-    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin,administrador-de-campana')->name('reporte.CandidatosCamaraFiltros');
+    Route::get('/votos/candidatos-camara', [ReporteController::class, 'CandidatosCamaraFiltros'])->middleware('role:admin,administrador-de-campana,ingeniero-de-sistemas')->name('reporte.CandidatosCamaraFiltros');
 
 
     Route::middleware('role:admin')->group(function () {
@@ -101,12 +101,12 @@ Route::middleware([Authenticate::class])->group(function () {
     });
     
     Route::get('/api/reporte-candidatosCamara', [ReporteController::class, 'reporteCandidatosCamara']);
-    Route::get('/votos/candidatosCamara', [ReporteController::class, 'CandidatosCamara'])->middleware('role:administrador-de-campana')->name('reporte.candidatosCamara');
+    Route::get('/votos/candidatosCamara', [ReporteController::class, 'CandidatosCamara'])->middleware('role:administrador-de-campana,ingeniero-de-sistemas')->name('reporte.candidatosCamara');
 
     Route::get('/votos/partidos', [ReporteController::class, 'Partidos'])->name('reporte.partidos');
     Route::get('/api/reporte-partidos', [ReporteController::class, 'reportePartidos']);
 
-    Route::get('/votos/partidosCamara', [ReporteController::class, 'PartidosCamara'])->middleware('role:admin,administrador-de-campana')->name('reporte.partidosCamara');
+    Route::get('/votos/partidosCamara', [ReporteController::class, 'PartidosCamara'])->middleware('role:admin,administrador-de-campana,ingeniero-de-sistemas')->name('reporte.partidosCamara');
     Route::get('/api/reporte-partidosCamara', [ReporteController::class, 'reportePartidosCamara']);
 
     Route::get('/api/votos', [reporteController::class, 'apiVotos']);
@@ -156,7 +156,7 @@ Route::middleware([Authenticate::class])->group(function () {
         Route::delete('/{id}', [barriosController::class, 'borrar'])->name('barrios.borrar');
     });
 
-    Route::prefix('roles')->middleware('role:admin')->group(function () {
+    Route::prefix('roles')->middleware('role:admin,ingeniero-de-sistemas')->group(function () {
         Route::get('/', [rolesController::class, 'listado'])->name('roles.listado');
         Route::post('/agregar', [rolesController::class, 'guardar'])->middleware(validarRolesCrear::class)->name('roles.agregar');
         Route::put('/{id}', [rolesController::class, 'modificar'])->middleware(validarRolesEditar::class)->name('roles.editar');
