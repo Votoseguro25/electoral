@@ -71,7 +71,7 @@ Route::middleware([Authenticate::class])->group(function () {
         Route::post('/reportar/e14/guardarCamara', [ReporteController::class, 'guardarReporteE14Camara'])->name('testigos.reportare14.guardarCamara');
     });
 
-    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo,ingeniero-de-sistemas')->name('testigos.reportare14Camara');
+    Route::get('/reportar/e14Camara', [ReporteController::class, 'crearReporteE14Camara'])->middleware('role:testigo,ingeniero-de-sistemas,visualizador')->name('testigos.reportare14Camara');
     
      
     Route::prefix('testigos/e14')->middleware('role:administrador-de-campana,visualizador,ingeniero-de-sistemas')->name('testigos.e14.')->group(function () {
