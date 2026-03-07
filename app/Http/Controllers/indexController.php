@@ -20,7 +20,7 @@ class indexController extends Controller
         $totalHombres = Persona::where('genero_id', '1')->count();
         $totalMujeres = Persona::where('genero_id', '2')->count();
 
-        $totalVotantes = datos::where('departamento', 'SAN ANDRES')->sum('total');
+        $totalVotantes = datos::where('departamento', 'CHOCO')->sum('total');
 
         //$TotalReal=DATOS::where('departamento','CHOCO')->sum('total');
 
