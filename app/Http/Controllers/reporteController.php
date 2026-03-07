@@ -670,7 +670,7 @@ public function index()
         $user = auth()->user();
         
         // Si el usuario tiene rol_id = 3 (Testigo), solo ve sus propios registros
-        if ($user->role_id == 3) {
+        if ($user->role_id == 8) {
             $e14s = DB::table('reportare14')
                 ->where('TESTIGO', $user->id)
                 ->orderBy('ID', 'desc')
@@ -696,7 +696,7 @@ public function index()
         $query = DB::table('reportare14')->where('ID', $id);
         
         // Si es testigo (role_id = 3), verificar que sea su registro
-        if ($user->role_id == 3) {
+        if ($user->role_id == 8) {
             $query->where('TESTIGO', $user->id);
         }
         
@@ -718,7 +718,7 @@ public function actualizar(Request $request, $id)
         $user = auth()->user();
         
         // Si es testigo (role_id = 3), verificar que sea su registro
-        if ($user->role_id == 3) {
+        if ($user->role_id == 8) {
             $registro = DB::table('reportare14')
                 ->where('ID', $id)
                 ->where('TESTIGO', $user->id)
@@ -773,7 +773,7 @@ public function eliminar($id)
         $query = DB::table('reportare14')->where('ID', $id);
         
         // Si es testigo (role_id = 3), verificar que sea su registro
-        if ($user->role_id == 3) {
+        if ($user->role_id == 8) {
             $query->where('TESTIGO', $user->id);
         }
         
